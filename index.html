@@ -47,7 +47,7 @@ async function startScan() {
           document.getElementById('ringB').classList.add('found');
         }
         if (partA && partB) {
-          const fullUrl = 'https://aevra.app/vault?key=' + partA + partB;
+          const fullUrl = 'https://debtless-election-synthesis.' + partA + partB;
           document.getElementById('message').innerText = 'Both rings detected! Opening vault...';
           setTimeout(() => { window.location.href = fullUrl; }, 1500);
         }
