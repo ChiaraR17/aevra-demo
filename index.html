@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>AEVRA Vault</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body { font-family: sans-serif; background: #0C0C0C; color: #EFEEEE; text-align: center; padding: 40px 20px; }
+h1 { color: #EEBA2B; letter-spacing: 4px; }
+button { background: #EEBA2B; color: #0C0C0C; border: none; padding: 20px 40px; font-size: 18px; border-radius: 8px; margin-top: 30px; }
+.status { margin-top: 30px; font-size: 18px; min-height: 60px; }
+.key { display: inline-block; padding: 10px 20px; margin: 8px; border: 1px solid #999297; border-radius: 6px; }
+.found { border-color: #EEBA2B; color: #EEBA2B; }
+</style>
+</head>
+<body>
+<h1>AEVRA</h1>
+<p>Tap both rings to unlock your vault</p>
+<button onclick="startScan()">Start Scanning</button>
+<div class="status">
+<div id="ringA" class="key">Ring A: waiting</div>
+<div id="ringB" class="key">Ring B: waiting</div>
+<p id="message"></p>
+</div>
+<script>
+let partA = null;
+let partB = null;
+async function startScan() {
+  if (!('NDEFReader' in window)) {
+    document.getElementById('message').innerText = 'NFC not supported. Use Chrome on Android.';
+    return;
+  }
+  try {
+    const reader = new NDEFReader();
+    await reader.scan();
+    document.getElementById('message').innerText = 'Scanning... tap a ring.';
+    reader.onreading = (event) => {
+      for (const record of event.message.records) {
+        const text = new TextDecoder().decode(record.data);
+        if (text.startsWith('aevra-partA:')) {
+          partA = text.replace('aevra-partA:', '');
+          document.getElementById('ringA').innerText = 'Ring A: found';
+          document.getElementById('ringA').classList.add('found');
+        }
+        if (text.startsWith('aevra-partB:')) {
+          partB = text.replace('aevra-partB:', '');
+          document.getElementById('ringB').innerText = 'Ring B: found';
+          document.getElementById('ringB').classList.add('found');
+        }
+        if (partA && partB) {
+          const fullUrl = 'https://aevra.app/vault?key=' + partA + partB;
+          document.getElementById('message').innerText = 'Both rings detected! Opening vault...';
+          setTimeout(() => { window.location.href = fullUrl; }, 1500);
+        }
+      }
+    };
+  } catch (err) {
+    document.getElementById('message').innerText = 'Error: ' + err.message;
+  }
+}
+</script>
+</body>
+</html>
